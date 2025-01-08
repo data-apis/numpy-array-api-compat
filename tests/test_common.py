@@ -1,9 +1,10 @@
 from array_api_compat import (  # noqa: F401
     is_numpy_array, is_cupy_array, is_torch_array,
     is_dask_array, is_jax_array, is_pydata_sparse_array,
+    is_ndonnx_array,
     is_numpy_namespace, is_cupy_namespace, is_torch_namespace,
     is_dask_namespace, is_jax_namespace, is_pydata_sparse_namespace,
-    is_array_api_strict_namespace,
+    is_array_api_strict_namespace, is_ndonnx_namespace,
 )
 
 from array_api_compat import device, is_array_api_obj, is_writeable_array, to_device
@@ -22,6 +23,7 @@ is_array_functions = {
     'dask.array': 'is_dask_array',
     'jax.numpy': 'is_jax_array',
     'sparse': 'is_pydata_sparse_array',
+    'ndonnx': 'is_ndonnx_array',
 }
 
 is_namespace_functions = {
@@ -32,6 +34,7 @@ is_namespace_functions = {
     'jax.numpy': 'is_jax_namespace',
     'sparse': 'is_pydata_sparse_namespace',
     'array_api_strict': 'is_array_api_strict_namespace',
+    'ndonnx': 'is_ndonnx_namespace',
 }
 
 
@@ -144,6 +147,13 @@ def test_asarray_cross_library(source_library, target_library, request):
         # TODO: remove xfail once
         # https://github.com/dask/dask/issues/8260 is resolved
         _xfail(reason="Bug in dask raising error on conversion")
+    elif (
+        source_library == "ndonnx" 
+        and target_library not in ("array_api_strict", "ndonnx", "numpy")
+    ):
+        _xfail(reason="The truth value of lazy Array Array(dtype=Boolean) is unknown")
+    elif source_library == "ndonnx" and target_library == "numpy":
+        _xfail(reason="produces numpy array of ndonnx scalar arrays")
     elif source_library == "jax.numpy" and target_library == "torch":
         _xfail(reason="casts int to float")
     elif source_library == "cupy" and target_library != "cupy":
